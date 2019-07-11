@@ -71,8 +71,7 @@ function plugin:header_filter(plugin_conf)
   plugin.super.header_filter(self)
 
   -- your custom code here, for example;
-  ngx.header["Bye-World"] = "this is on the response"
-
+  kong.response.set_header("GoodbyeWorld", "See ya!")
 end --]]
 
 --[[ runs in the 'body_filter_by_lua_block'
