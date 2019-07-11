@@ -8,15 +8,9 @@
 local plugin_name = 'gql-dealership'
 
 -- load the base plugin object and create a subclass
-local plugin = require("kong.plugins.base_plugin"):extend()
+local _GqlDealership = require("kong.plugins.gql-base-plugin"):extend()
+local routes = _GqlDealership.routes()
 
--- constructor
-function plugin:new()
-  plugin.super.new(self, plugin_name)
-
-  -- do initialization here, runs in the 'init_by_lua_block', before worker processes are forked
-
-end
 
 ---------------------------------------------------------------------------------------------
 -- In the code below, just remove the opening brackets; `[[` to enable a specific handler
@@ -57,22 +51,17 @@ function plugin:rewrite(plugin_conf)
 
 end --]]
 
----[[ runs in the 'access_by_lua_block'
-function plugin:access(plugin_conf)
-  plugin.super.access(self)
+function routes.query.allCars:access(_, cars_node)
+  if cars_node.arguments.pageSize > 50 then
+    return kong.response.exit(400, 'Bad request')
+  end
+end
 
-  -- your custom code here
-  ngx.req.set_header("Hello-World", "this is on a request")
-
-end --]]
-
----[[ runs in the 'header_filter_by_lua_block'
-function plugin:header_filter(plugin_conf)
-  plugin.super.header_filter(self)
-
-  -- your custom code here, for example;
-  kong.response.set_header("GoodbyeWorld", "See ya!")
-end --]]
+function routes.query.allCustomers:access(_, customers_node)
+  if customers_node.arguments.pageSize > 150 then
+    return kong.response.exit(400, 'Bad request')
+  end
+end
 
 --[[ runs in the 'body_filter_by_lua_block'
 function plugin:body_filter(plugin_conf)
@@ -92,7 +81,7 @@ end --]]
 
 
 -- set the plugin priority, which determines plugin execution order
-plugin.PRIORITY = 1000
+_GqlDealership.PRIORITY = 1000
 
 -- return our plugin object
-return plugin
+return _GqlDealership
